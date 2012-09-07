@@ -1,3 +1,6 @@
+@echo off
+REM Do all of the prep-work steps required to build the aaronkmurray.com site
+
 REM use RSSGEN to build rss feed
 rssgen.exe -s=../../aaronkmurray-blog/index.html -o=../../aaronkmurray-blog/feeds/feed-rss.xml -f=rss
 
