@@ -10,6 +10,7 @@ namespace rssgen
     {
         static void Main(string[] args)
         {
+            var _startTime = DateTime.Now;
             string fileSource = null;
             string fileOutput = "feed-rss.xml";
             string baseUrl = "http://aaronkmurray.com";
@@ -41,8 +42,10 @@ namespace rssgen
                 { "xd|xpathPostDate=", "[optional, default="+xpathPostDate + "]", x => xpathPostDate = x },
                 { "xt|xpathPostTags=", "[optional, default="+xpathPostTags + "]", x => xpathPostTags = x },
                 { "xi|xpathPostImage=", "[optional, default="+xpathPostImage + "]", x => xpathPostImage = x },
-                { "d|debug|v|verbose", "[optional, show debug details (verbose), default="+showDebug + "]",   x => showDebug = (x == null) || bool.Parse(x)},
-                { "p|pauseWhenFinished", "[optional, pause output window with a ReadLine when finished, default="+pauseWhenFinished + "]",   x => pauseWhenFinished = (x != null) || bool.Parse(x)},
+
+                //standard options for command line utils
+                { "d|debug", "[optional, show debug details (verbose), default="+showDebug + "]",   x => showDebug = x != null},
+                { "pause|pauseWhenFinished", "[optional, pause output window with a ReadLine when finished, default="+pauseWhenFinished + "]",   x => pauseWhenFinished = (x != null)},
                 { "h|?|help", "show the help options",   x => showHelp = x != null },
             };
             List<string> extraArgs = p.Parse (args);
@@ -166,8 +169,16 @@ namespace rssgen
             //write feed string (xml) to filesystem 
             WriteTextFile(fileOutput, feedText);
 
+            if (showDebug)
+            {
+                Console.WriteLine("Complete at " + DateTime.Now.ToLongTimeString() + ". Took " + DateTime.Now.Subtract(_startTime).TotalSeconds + " seconds to run");
+            }
+
             if (pauseWhenFinished)
+            {
+                Console.WriteLine("Press any key to complete");
                 Console.ReadLine(); //just here to pause the output window during testing
+            }
         }
 
         /// <summary>
