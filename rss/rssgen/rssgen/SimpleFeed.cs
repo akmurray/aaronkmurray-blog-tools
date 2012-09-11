@@ -21,10 +21,11 @@ namespace rssgen
         }
 
 
-        public void AddEntry(string header, string body, string date, string tags, string image)
+        public void AddEntry(string id, string header, string body, string date, string tags, string image)
         {
             var entry = new SimpleFeedEntry();
 
+            entry.Id = id;
             entry.Title = header;
             entry.Body = body;
             entry.Date = date;

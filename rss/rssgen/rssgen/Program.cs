@@ -20,7 +20,9 @@ namespace rssgen
             bool pauseWhenFinished = false;
             string feedFormat = "rss"; //rss/atom
             int maxItems = 64;
+
             string xpathPost = "//div[@class='blog-post']";
+            string xpathPostGuid = "//div[@class='blog-post-guid']";
             string xpathPostHeader = "div[@class='blog-post-header']/span";
             string xpathPostBody = "div[@class='blog-post-body']";
             string xpathPostDate = "div[@class='blog-post-footer']/span[@class='post-timestamp']";
@@ -37,6 +39,7 @@ namespace rssgen
                 
                 // add selector options to get to post details 
                 { "xp|xpathPost=", "[optional, default="+xpathPost + "]", x => xpathPost = x },
+                { "xg|xpathPostGuid=", "[optional, default="+xpathPostGuid + "]", x => xpathPostGuid = x },
                 { "xh|xpathPostHeader=", "[optional, default="+xpathPostHeader + "]", x => xpathPostHeader = x },
                 { "xb|xpathPostBody=", "[optional, default="+xpathPostBody + "]", x => xpathPostBody = x },
                 { "xd|xpathPostDate=", "[optional, default="+xpathPostDate + "]", x => xpathPostDate = x },
@@ -101,6 +104,22 @@ namespace rssgen
                 return;
             }
 
+            //pre-parsing pass to see if we need to auto-generate post ids for our index.html
+            var guidNodes = doc.DocumentNode.SelectNodes(xpathPostGuid);
+            int countPostIdsAdded = 0;
+            foreach (var guidNode in guidNodes)
+            {
+                if (string.IsNullOrWhiteSpace(guidNode.InnerText))
+                {
+                    var newGuidNode = HtmlNode.CreateNode(Guid.NewGuid().ToString());
+                    guidNode.AppendChild(newGuidNode);
+                    countPostIdsAdded++;
+                }
+            }
+            if (countPostIdsAdded > 0)
+                doc.Save(fileSource);
+
+
             var feed = new SimpleFeed(baseUrl, feedTitle);
 
 
@@ -115,13 +134,15 @@ namespace rssgen
                     //parse feed items from HTML
 
                     //HtmlAttribute att = el.Attributes["href"];
+                    var id = el.SelectSingleNode(xpathPostGuid);
                     var header = el.SelectSingleNode(xpathPostHeader);
-                    var body =  el.SelectSingleNode(xpathPostBody);
+                    var body = el.SelectSingleNode(xpathPostBody);
                     var date =  el.SelectSingleNode(xpathPostDate);
                     var tags =  el.SelectSingleNode(xpathPostTags);
                     var image =  el.SelectSingleNode(xpathPostImage);
 
-                    feed.AddEntry(header == null ? null : header.InnerText.Replace("src='img/", "src='/img/")
+                    feed.AddEntry(id.InnerText
+                        , header == null ? null : header.InnerText.Replace("src='img/", "src='/img/")
                         , body == null ? null : body.InnerHtml.Replace("src='img/", "src='/img/")
                         , date == null ? null : date.InnerText
                         , tags == null ? null : tags.InnerText

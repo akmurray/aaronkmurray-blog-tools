@@ -124,7 +124,7 @@ namespace rssgen
                     items.Add(new SyndicationItem
                         {
                             Title = new TextSyndicationContent(entry.Title)
-                            //,Id = 123456789
+                            , Id = entry.Id //Id is required so that each new post won't make readers think that every entry is new
                             , PublishDate = date
                             , Content = new TextSyndicationContent(entry.Body) // + entry.ImageHtml
                         });
