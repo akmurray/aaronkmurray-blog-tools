@@ -121,8 +121,8 @@ namespace rssgen
                     var tags =  el.SelectSingleNode(xpathPostTags);
                     var image =  el.SelectSingleNode(xpathPostImage);
 
-                    feed.AddEntry(header == null ? null : header.InnerText
-                        , body == null ? null : body.InnerHtml
+                    feed.AddEntry(header == null ? null : header.InnerText.Replace("src='img/", "src='/img/")
+                        , body == null ? null : body.InnerHtml.Replace("src='img/", "src='/img/")
                         , date == null ? null : date.InnerText
                         , tags == null ? null : tags.InnerText
                         , image == null ? null : image.OuterHtml
