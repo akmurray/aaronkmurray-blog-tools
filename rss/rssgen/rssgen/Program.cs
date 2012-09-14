@@ -129,7 +129,7 @@ namespace rssgen
             {
                 if (string.IsNullOrWhiteSpace(node.InnerText))
                 {
-                    var newNode = HtmlNode.CreateNode(string.Format("Posted on {0:MMMM dd, yyyy @ h:mmtt}", DateTime.Now));
+                    var newNode = HtmlNode.CreateNode(string.Format("Posted on {0:MMMM d, yyyy @ h:mmtt}", DateTime.Now));
                     node.AppendChild(newNode);
                     countPostTimestampsAdded++;
                 }
@@ -164,13 +164,17 @@ namespace rssgen
                     DateTime datePublished = DateTime.Now;
                     if (datePublishedNode != null)
                     {
-                        if (!DateTime.TryParseExact(datePublishedNode.InnerText.Replace("Posted on", "").Trim(), "MMMM dd, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.None, out datePublished))
+                        if (!DateTime.TryParseExact(datePublishedNode.InnerText.Replace("Posted on", "").Trim(), "MMMM d, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.None, out datePublished))
+                        {
                             datePublished = DateTime.Now;
+                            if (showDebug)
+                                Console.WriteLine("WARNING Failed to parse Date Published for " + header.InnerText);
+                        }
                     }
                     DateTime dateUpdated = datePublished;
                     if (dateUpdatedNode != null)
                     {
-                        if (!DateTime.TryParseExact(dateUpdatedNode.InnerText.Replace("Last Updated on", "").Trim(), "MMMM dd, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateUpdated))
+                        if (!DateTime.TryParseExact(dateUpdatedNode.InnerText.Replace("Last Updated on", "").Trim(), "MMMM d, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateUpdated)) 
                             dateUpdated = datePublished;
                     }
 
