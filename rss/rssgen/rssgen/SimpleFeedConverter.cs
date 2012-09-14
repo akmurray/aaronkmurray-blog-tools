@@ -117,15 +117,13 @@ namespace rssgen
             {
                 foreach (var entry in pFeed.Entries)
                 {
-                    DateTime date;
-                    if (!DateTime.TryParse(entry.Date, out date))
-                        date = DateTime.Now;
-
                     items.Add(new SyndicationItem
                         {
+                            //Id, DatePublished, DateLastUpdated are required so that each new post won't make readers think that every entry is new
                             Title = new TextSyndicationContent(entry.Title)
-                            , Id = entry.Id //Id is required so that each new post won't make readers think that every entry is new
-                            , PublishDate = date
+                            , Id = entry.Id 
+                            , PublishDate = entry.DatePublished
+                            , LastUpdatedTime = entry.DateLastUpdated
                             , Content = new TextSyndicationContent(entry.Body) // + entry.ImageHtml
                         });
                 }

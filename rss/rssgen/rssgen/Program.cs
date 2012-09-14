@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.IO;
 using HtmlAgilityPack;
 using Mono.Options;
@@ -22,10 +23,11 @@ namespace rssgen
             int maxItems = 64;
 
             string xpathPost = "//div[@class='blog-post']";
-            string xpathPostGuid = "//div[@class='blog-post-guid']";
+            string xpathPostGuid = "div[@class='blog-post-guid']";
             string xpathPostHeader = "div[@class='blog-post-header']/span";
             string xpathPostBody = "div[@class='blog-post-body']";
-            string xpathPostDate = "div[@class='blog-post-footer']/span[@class='post-timestamp']";
+            string xpathPostDatePub = "div[@class='blog-post-footer']/span[@class='post-timestamp']";
+            string xpathPostDateUpdated = "div[@class='blog-post-footer']/span[@class='post-timestamp-updated']";
             string xpathPostTags = "div[@class='blog-post-footer']/span[@class='post-tags']";
             string xpathPostImage = "div[@class='blog-post-footer']/span[@class='post-screenshot']/a/img";
 
@@ -42,7 +44,8 @@ namespace rssgen
                 { "xg|xpathPostGuid=", "[optional, default="+xpathPostGuid + "]", x => xpathPostGuid = x },
                 { "xh|xpathPostHeader=", "[optional, default="+xpathPostHeader + "]", x => xpathPostHeader = x },
                 { "xb|xpathPostBody=", "[optional, default="+xpathPostBody + "]", x => xpathPostBody = x },
-                { "xd|xpathPostDate=", "[optional, default="+xpathPostDate + "]", x => xpathPostDate = x },
+                { "xd|xpathPostDatePub=", "[optional, default="+xpathPostDatePub + "]", x => xpathPostDatePub = x },
+                { "xdu|xpathPostDateUpdated=", "[optional, default="+xpathPostDateUpdated + "]", x => xpathPostDateUpdated = x },
                 { "xt|xpathPostTags=", "[optional, default="+xpathPostTags + "]", x => xpathPostTags = x },
                 { "xi|xpathPostImage=", "[optional, default="+xpathPostImage + "]", x => xpathPostImage = x },
 
@@ -105,19 +108,35 @@ namespace rssgen
             }
 
             //pre-parsing pass to see if we need to auto-generate post ids for our index.html
-            var guidNodes = doc.DocumentNode.SelectNodes(xpathPostGuid);
+            var guidNodes = doc.DocumentNode.SelectNodes("//" + xpathPostGuid);
             int countPostIdsAdded = 0;
-            foreach (var guidNode in guidNodes)
+            foreach (var node in guidNodes)
             {
-                if (string.IsNullOrWhiteSpace(guidNode.InnerText))
+                if (string.IsNullOrWhiteSpace(node.InnerText))
                 {
-                    var newGuidNode = HtmlNode.CreateNode(Guid.NewGuid().ToString());
-                    guidNode.AppendChild(newGuidNode);
+                    var newNode = HtmlNode.CreateNode(Guid.NewGuid().ToString());
+                    node.AppendChild(newNode);
                     countPostIdsAdded++;
                 }
             }
             if (countPostIdsAdded > 0)
                 doc.Save(fileSource);
+
+            //pre-parsing pass to see if we need to auto-generate post timestamps for our index.html
+            var dateNodes = doc.DocumentNode.SelectNodes("//" + xpathPostDatePub);
+            int countPostTimestampsAdded = 0;
+            foreach (var node in dateNodes)
+            {
+                if (string.IsNullOrWhiteSpace(node.InnerText))
+                {
+                    var newNode = HtmlNode.CreateNode(string.Format("Posted on {0:MMMM dd, yyyy @ h:mmtt}", DateTime.Now));
+                    node.AppendChild(newNode);
+                    countPostTimestampsAdded++;
+                }
+            }
+            if (countPostTimestampsAdded > 0)
+                doc.Save(fileSource);
+
 
 
             var feed = new SimpleFeed(baseUrl, feedTitle);
@@ -137,14 +156,29 @@ namespace rssgen
                     var id = el.SelectSingleNode(xpathPostGuid);
                     var header = el.SelectSingleNode(xpathPostHeader);
                     var body = el.SelectSingleNode(xpathPostBody);
-                    var date =  el.SelectSingleNode(xpathPostDate);
-                    var tags =  el.SelectSingleNode(xpathPostTags);
+                    var datePublishedNode = el.SelectSingleNode(xpathPostDatePub);
+                    var dateUpdatedNode = el.SelectSingleNode(xpathPostDateUpdated);
+                    var tags = el.SelectSingleNode(xpathPostTags);
                     var image =  el.SelectSingleNode(xpathPostImage);
+
+                    DateTime datePublished = DateTime.Now;
+                    if (datePublishedNode != null)
+                    {
+                        if (!DateTime.TryParseExact(datePublishedNode.InnerText.Replace("Posted on", "").Trim(), "MMMM dd, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.None, out datePublished))
+                            datePublished = DateTime.Now;
+                    }
+                    DateTime dateUpdated = datePublished;
+                    if (dateUpdatedNode != null)
+                    {
+                        if (!DateTime.TryParseExact(dateUpdatedNode.InnerText.Replace("Last Updated on", "").Trim(), "MMMM dd, yyyy @ h:mmtt", CultureInfo.InvariantCulture, DateTimeStyles.None, out dateUpdated))
+                            dateUpdated = datePublished;
+                    }
 
                     feed.AddEntry(id.InnerText
                         , header == null ? null : header.InnerText.Replace("src='img/", "src='/img/")
                         , body == null ? null : body.InnerHtml.Replace("src='img/", "src='/img/")
-                        , date == null ? null : date.InnerText
+                        , datePublished
+                        , dateUpdated
                         , tags == null ? null : tags.InnerText
                         , image == null ? null : image.OuterHtml
                     );
@@ -152,16 +186,21 @@ namespace rssgen
                     if (showDebug)
                     {
                         if (header == null)
+                            Console.WriteLine("id: NOT FOUND");
+                        else
+                            Console.WriteLine("id: " + id.InnerText);
+
+                        if (header == null)
                             Console.WriteLine("header: NOT FOUND");
                         else
                             Console.WriteLine("header: " + header.InnerText);
 
                         //Console.WriteLine("body: " + body.InnerHtml);
 
-                        if (date == null)
+                        if (datePublishedNode == null)
                             Console.WriteLine("date: NOT FOUND");
                         else
-                            Console.WriteLine("date: " + date.InnerText);
+                            Console.WriteLine("date: " + datePublishedNode.InnerText);
 
                         if (tags == null)
                             Console.WriteLine("tags: NOT FOUND");

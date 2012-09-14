@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 
 namespace rssgen
 {
@@ -21,14 +22,15 @@ namespace rssgen
         }
 
 
-        public void AddEntry(string id, string header, string body, string date, string tags, string image)
+        public void AddEntry(string id, string header, string body, DateTime datePublished, DateTime dateUpdated, string tags, string image)
         {
             var entry = new SimpleFeedEntry();
 
             entry.Id = id;
             entry.Title = header;
             entry.Body = body;
-            entry.Date = date;
+            entry.DatePublished = datePublished;
+            entry.DateLastUpdated = dateUpdated;
             entry.Tags = tags;
             entry.ImageHtml = image;
 
