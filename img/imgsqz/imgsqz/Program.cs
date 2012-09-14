@@ -22,6 +22,9 @@ namespace imgsqz
     /// </summary>
     class Program
     {
+
+        private static object _lock_fileStatuses = new object();
+
         static void Main(string[] args)
         {
             var _startTime = DateTime.Now;
@@ -40,8 +43,8 @@ namespace imgsqz
                 { "s|pathSource=", "[optional, default=current folder]",  x => pathSource = x },
                 { "f|forceRecalc", "[optional, force a recalculation of all images, default=" + forceRecalc + "]",   x => forceRecalc = (x != null) || bool.Parse(x)},
                 { "r|recurseDirs", "[optional, recursively compress images in subfolders, default="+recurseDirs + "]",   x => recurseDirs = (x == null) || bool.Parse(x)},
-                { "pat|searchPattern", "[optional, filename pattern match expression, default="+searchPattern + "]",   x => searchPattern = x},
-                { "pfs|pathFileStatus", "[optional, file to store file compression status info, default="+pathFileStatus + "]",   x => pathFileStatus = x},
+                { "pat|searchPattern=", "[optional, filename pattern match expression, default="+searchPattern + "]",   x => searchPattern = x},
+                { "pfs|pathFileStatus=", "[optional, file to store file compression status info, default="+pathFileStatus + "]",   x => pathFileStatus = x},
                 
 
                 //standard options for command line utils
@@ -202,7 +205,8 @@ namespace imgsqz
                     try
                     {
                         //save current status in case the program gets killed before run completes. Eat multi-threaded IO exceptions here because this isn't a critical save
-                        IOHelper.WriteTextFile(pathFileStatus, ToJson(fileStatuses));
+                        lock (_lock_fileStatuses)
+                            IOHelper.WriteTextFile(pathFileStatus, ToJson(fileStatuses));
                     } catch { }
 
                 } 
@@ -215,7 +219,8 @@ namespace imgsqz
 
 
             // --- SAVE OUR CURRENT FILE STATUS --- //
-            IOHelper.WriteTextFile(pathFileStatus, ToJson(fileStatuses));
+            lock (_lock_fileStatuses)
+                IOHelper.WriteTextFile(pathFileStatus, ToJson(fileStatuses));
 
             Console.WriteLine();
             Console.WriteLine(string.Format("Compressed {0} files for a total savings of {1} bytes", compressedCount, compressionSavings));
