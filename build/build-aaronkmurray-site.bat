@@ -1,6 +1,28 @@
 @ECHO OFF
 REM Do all of the prep-work steps required to build the aaronkmurray.com site 
 
+SET tidyErrFile=_tidy.index.html.errors.txt
+tidy.exe -output _tidy.index.html.original.txt -file %tidyErrFile%  ../../aaronkmurray-blog/index.html 
+
+IF ERRORLEVEL 2 GOTO tidy_errors
+IF ERRORLEVEL 1 GOTO tidy_warnings
+IF ERRORLEVEL 0 GOTO tidy_success
+
+:tidy_errors
+ECHO tidy: errors found
+notepad %tidyErrFile%
+exit
+
+
+:tidy_warnings
+ECHO tidy: warnings found
+notepad %tidyErrFile%
+exit
+
+ 
+:tidy_success
+ECHO tidy: success
+
 
 REM Make post screenshot thumbnails if necessary
 FOR /F %%A IN ('dir /b "../../aaronkmurray-blog/img/blog/screenshots/" ^|findstr /liv "thumb"') DO (

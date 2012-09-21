@@ -127,9 +127,10 @@ namespace rssgen
             int countPostTimestampsAdded = 0;
             foreach (var node in dateNodes)
             {
-                if (string.IsNullOrWhiteSpace(node.InnerText))
+                if (string.IsNullOrWhiteSpace(node.InnerText) || node.InnerText.Trim() == "?")
                 {
                     var newNode = HtmlNode.CreateNode(string.Format("Posted on {0:MMMM d, yyyy @ h:mmtt}", DateTime.Now));
+                    node.ChildNodes.Clear(); //kill the "?" or " " text
                     node.AppendChild(newNode);
                     countPostTimestampsAdded++;
                 }
