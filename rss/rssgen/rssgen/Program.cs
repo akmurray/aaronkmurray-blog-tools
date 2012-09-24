@@ -22,7 +22,7 @@ namespace rssgen
             string feedFormat = "rss"; //rss/atom
             int maxItems = 64;
 
-            string xpathPost = "//div[@class='blog-post']";
+            string xpathPost = "//article[@class='blog-post']";
             string xpathPostGuid = "div[@class='blog-post-guid']";
             string xpathPostHeader = "div[@class='blog-post-header']/span";
             string xpathPostBody = "div[@class='blog-post-body']";
