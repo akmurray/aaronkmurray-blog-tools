@@ -1,6 +1,8 @@
 @ECHO OFF
 REM Do all of the prep-work steps required to build the aaronkmurray.com site 
 
+
+
 SET tidyErrFile=_tidy.index.html.errors.txt
 tidy.exe -output _tidy.index.html.original.txt -file %tidyErrFile%  ../../aaronkmurray-blog/index.html 
 
@@ -43,6 +45,15 @@ FOR /F %%A IN ('dir /b "../../aaronkmurray-blog/img/blog/screenshots/" ^|findstr
 )
 
 
+REM use imgsprite to make a css sprite for the thumbnail previews
+imgsprite.exe -in:../../aaronkmurray-blog/img/blog/screenshots/*-thumb-100*.png -img-out:../../aaronkmurray-blog/img/blog/sprites/post-screenshot-thumbs-all.png -css-out:../../aaronkmurray-blog/css/sprites/post-screenshot-thumbs-all.css -css-class-name-prefix:img- -image-deploy-url-base:../../img/blog/sprites/ -gen-test-html:true -test-html-path:../../aaronkmurray-blog/test/sprites/ -test-html-deploy-url-base:../../img/blog/sprites/ -limit-bit-depth:8 
+
+REM use imgsprite to make a css sprite for site header & footer icons
+imgsprite.exe -in:../../aaronkmurray-blog/img/blog/icons/*.png -img-out:../../aaronkmurray-blog/img/blog/sprites/blog-icons-all.png -css-out:../../aaronkmurray-blog/css/sprites/blog-icons-all.css -css-class-name-prefix:img- -image-deploy-url-base:../../img/blog/sprites/ -gen-test-html:true -test-html-path:../../aaronkmurray-blog/test/sprites/ -test-html-deploy-url-base:../../img/blog/sprites/
+
+
+
+
 REM use RSSGEN to build rss feed
 rssgen.exe -s=../../aaronkmurray-blog/index.html -o=../../aaronkmurray-blog/feeds/feed-rss.xml -f=rss
 
@@ -67,6 +78,7 @@ exit
 
 
 :rssgen_atom_success
+
 
 REM use imgsqz to losslessly compress the filesize of images
 imgsqz.exe -s=../../aaronkmurray-blog/ 

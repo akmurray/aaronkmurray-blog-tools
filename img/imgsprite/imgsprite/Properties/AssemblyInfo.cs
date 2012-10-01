@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("imgsqz")]
-[assembly: AssemblyDescription("lossless image filesize reducer")]
+[assembly: AssemblyTitle("imgsprite")]
+[assembly: AssemblyDescription("CSS Sprite generator")]
 [assembly: AssemblyConfiguration("")]
 [assembly: AssemblyCompany("")]
-[assembly: AssemblyProduct("imgsqz")]
-[assembly: AssemblyCopyright("Copyright © Aaron Murray 2012")]
+[assembly: AssemblyProduct("imgsprite")]
+[assembly: AssemblyCopyright("Copyright © Aaron K Murray 2012")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("011ecb10-6c44-4099-8c28-a5a7d447f8b5")]
+[assembly: Guid("e27a7915-d278-4cd6-98e8-b23500bedd5e")]
 
 // Version information for an assembly consists of the following four values:
 //

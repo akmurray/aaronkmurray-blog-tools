@@ -1,0 +1,9 @@
+﻿.[CssClassNamePrefix][CssClassNameBase][CssClassNameSuffix]
+{
+    width: [Width]px;
+    height: [Height]px;
+    background-image: url([ImageDeployUrlBase][ImageFileName]);
+    background-position: [OffsetX]px [OffsetY]px;
+    background-repeat:no-repeat;
+}
+

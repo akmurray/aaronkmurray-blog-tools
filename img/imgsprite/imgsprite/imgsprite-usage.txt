@@ -1,0 +1,72 @@
+﻿Usage:
+imgsprite helps to combine multiple GIF and PNG images into one GIF file.
+The usage is described below...
+
+imgsprite.exe 
+        -in:image_file_path(s) 
+        -in:more_image_file_path(s) 
+        -img-out:output_gif_file_path 
+        -css-out:output_css_file_path
+        [-css-class-name-prefix:class_name_prefix] 
+        [-image-deploy-url-base:deployment_path_of_the_image]
+        [-gen-test-html:true/false]
+       
+-in:        This parameter can occur multiple times and it gives the path 
+            of the input image(s).  The path can be either absolute or 
+            relative.  Also, the path can be unique or a pattern.  E.g., 
+            the following paths are supported...
+                a) image.gif
+                b) d:\image.gif
+                c) *.gif
+                d) d:\*.gif
+
+-img-out:   This parameter can occur only once and gives the file path of 
+            the output image.  The file should be of extension GIF or PNG.
+            The path can be of either relative or absolute. 
+
+-css-out:   This parameter can occur only once and gives the file path of 
+            the output css.  The file should be of extension CSS.  The path 
+            can be of either relative or absolute.
+            
+
+-css-class-name-prefix:     This parameter is optional.  This gives the prefix 
+                            value to be added to the CSS style names generated
+                            by the tool.  The CSS style names generated are 
+                            nothing but the image file names along with the 
+                            extension, with the "." replaced by an underscore.
+                            
+-css-class-name-suffix:     This parameter is optional.  This gives the suffix 
+                            value to be added to the CSS style names generated
+                            by the tool.  The CSS style names generated are 
+                            nothing but the image file names along with the 
+                            extension, with the "." replaced by an underscore.
+                            
+-image-deploy-url-base:  This parameter is optional.  This gives the 
+                            deployment path prefix that is to be attached 
+                            to the image reference in the CSS.  For instance 
+                            if the image output file name is "result.gif" 
+                            and it'll be deployed under resources/images, 
+                            then this parameter should hold the value of 
+                            "/resources/images/".  The output CSS will 
+                            contain references to 
+                            "/resources/images/result.gif"
+
+-gen-test-html:         True/False. Generate a test html page. Placed in 
+                        output css folder.
+
+-test-html-deploy-url-base:     string. If specified, will override the value
+                                in -image-deploy-url-base in the generated
+                                test css html file
+
+
+Example usage:
+imgsprite.exe -in:a.gif -in:b.gif -in:d:\*.gif -img-out:z.gif -css-out:z.css
+
+imgsprite.exe -in:c:\*.gif -img-out:z.png -css-out:z.css -gen-test-html:true
+
+                
+imgsprite.exe -in:a.gif -in:b.gif -in:d:\*.gif -img-out:z.gif -css-out:z.css 
+            -css-class-name-prefix:img-
+                
+imgsprite.exe -in:a.gif -in:b.gif -in:d:\*.gif -img-out:z.gif -css-out:z.css 
+            -css-class-name-prefix:img- -image-deploy-url-base:/images/
