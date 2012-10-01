@@ -25,8 +25,18 @@ namespace imgsqz
 
         private static object _lock_fileStatuses = new object();
 
-        static void Main(string[] args)
+
+        enum ExitCode
         {
+            Success = 0,
+            Warning = 1,
+            Error = 2
+        }
+
+        static int Main(string[] args)
+        {
+            
+
             var _startTime = DateTime.Now;
             string pathSource = null;
             bool forceRecalc = false;
@@ -67,7 +77,7 @@ namespace imgsqz
             if (showHelp)
             {
                 p.WriteOptionDescriptions(Console.Out);
-                return;
+                return (int)ExitCode.Warning;
             }
 
 
@@ -97,7 +107,7 @@ namespace imgsqz
             {
                 Console.WriteLine("Error finding files in: " + pathSource);
                 Console.WriteLine(ex.Message);
-                return;
+                return (int)ExitCode.Error;
             }
 
             if (showDebug)
@@ -127,7 +137,7 @@ namespace imgsqz
             {
                 Console.WriteLine("Error creating status file: " + pathFileStatus);
                 Console.WriteLine(ex.Message);
-                return;
+                return (int)ExitCode.Error;
             }
 
             try
@@ -141,7 +151,7 @@ namespace imgsqz
                 //ugh, quick hack just in case
                 File.Delete(pathFileStatus);
                 IOHelper.WriteTextFile(pathFileStatus, ToJson(new List<ImageActionStatus>()));
-                return;
+                return (int)ExitCode.Error;
             }
 
 
@@ -235,6 +245,7 @@ namespace imgsqz
                 Console.WriteLine("Press any key to complete");
                 Console.ReadLine(); //just here to pause the output window during testing
             }
+            return (int)ExitCode.Success;
         }
 
         private static CompressionResult TryCompress(string path)

@@ -9,7 +9,16 @@ namespace rssgen
 {
     class Program
     {
-        static void Main(string[] args)
+
+
+        enum ExitCode
+        {
+            Success = 0,
+            Warning = 1,
+            Error = 2
+        }
+
+        static int Main(string[] args)
         {
             var _startTime = DateTime.Now;
             string fileSource = null;
@@ -17,7 +26,7 @@ namespace rssgen
             string baseUrl = "http://aaronkmurray.com";
             string feedTitle = "aaronkmurray.com | Aaron Murray's Blog Feed";
             bool showHelp = false;
-            bool showDebug = true;
+            bool showDebug = false;
             bool pauseWhenFinished = false;
             string feedFormat = "rss"; //rss/atom
             int maxItems = 64;
@@ -69,7 +78,7 @@ namespace rssgen
             if (showHelp || args.Length == 0 || string.IsNullOrWhiteSpace(fileSource))
             {
                 p.WriteOptionDescriptions(Console.Out);
-                return;
+                return (int)ExitCode.Warning;
             }
 
 
@@ -104,7 +113,7 @@ namespace rssgen
             {
                 Console.WriteLine("Error loading fileSource: " + fileSource);
                 Console.WriteLine(ex.Message);
-                return;
+                return (int)ExitCode.Error;
             }
 
             //pre-parsing pass to see if we need to auto-generate post ids for our index.html
@@ -223,7 +232,7 @@ namespace rssgen
             {
                 Console.WriteLine("Error parsing fileSource: " + fileSource);
                 Console.WriteLine(ex.Message);
-                return;
+                return (int)ExitCode.Error;
             }
 
             
@@ -244,6 +253,7 @@ namespace rssgen
                 Console.WriteLine("Press any key to complete");
                 Console.ReadLine(); //just here to pause the output window during testing
             }
+            return (int)ExitCode.Success;
         }
 
         /// <summary>

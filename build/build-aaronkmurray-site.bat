@@ -46,13 +46,30 @@ FOR /F %%A IN ('dir /b "../../aaronkmurray-blog/img/blog/screenshots/" ^|findstr
 REM use RSSGEN to build rss feed
 rssgen.exe -s=../../aaronkmurray-blog/index.html -o=../../aaronkmurray-blog/feeds/feed-rss.xml -f=rss
 
+IF ERRORLEVEL 2 GOTO rssgen_error
+IF ERRORLEVEL 1 GOTO rssgen_warning
+IF ERRORLEVEL 0 GOTO rssgen_xml_success
 
+
+:rssgen_xml_success
 REM use RSSGEN to build atom feed
 rssgen.exe -s=../../aaronkmurray-blog/index.html -o=../../aaronkmurray-blog/feeds/feed-atom.xml -f=atom
 
+IF ERRORLEVEL 2 GOTO rssgen_error
+IF ERRORLEVEL 1 GOTO rssgen_warning
+IF ERRORLEVEL 0 GOTO rssgen_atom_success
+
+
+:rssgen_error
+:rssgen_warning
+ECHO rssgen: errors found
+exit
+
+
+:rssgen_atom_success
 
 REM use imgsqz to losslessly compress the filesize of images
-imgsqz.exe -s=../../aaronkmurray-blog/ -debug
+imgsqz.exe -s=../../aaronkmurray-blog/ 
 
 
 REM Future (just testing for now). HTML minification nets approx 10% filesize reduction. 
