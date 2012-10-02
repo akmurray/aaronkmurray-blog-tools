@@ -71,7 +71,6 @@ namespace rssgen
 
         private string ToFeedText(SyndicationFeedFormatter pFormatter)
         {
-            var sb = new StringBuilder();
 
             var settings = new XmlWriterSettings
             {
@@ -88,12 +87,16 @@ namespace rssgen
                 OmitXmlDeclaration = false
             };
 
-            using (var writer = XmlWriter.Create(sb, settings))
+            //var sb = new StringBuilder();
+            //using (var writer = XmlWriter.Create(sb, settings))
+            using (var stream = new MemoryStream())
+            using (var writer = XmlWriter.Create(stream, settings))
             {
                 pFormatter.WriteTo(writer);
                 writer.Flush();
                 writer.Close();
-                return sb.ToString();
+                //return sb.ToString();
+                return Encoding.UTF8.GetString(stream.ToArray());
             }
         }
 
