@@ -33,7 +33,7 @@ namespace rssgen
 
             string xpathPost = "//article[@class='blog-post']";
             string xpathPostGuid = "div[@class='blog-post-guid']";
-            string xpathPostHeader = "div[@class='blog-post-header']/span";
+            string xpathPostHeader = "div[@class='blog-post-header']/h2";
             string xpathPostBody = "div[@class='blog-post-body']";
             string xpathPostDatePub = "div[@class='blog-post-footer']/span[@class='post-timestamp']";
             string xpathPostDateUpdated = "div[@class='blog-post-footer']/span[@class='post-timestamp-updated']";
