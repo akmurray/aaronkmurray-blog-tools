@@ -4,7 +4,7 @@ REM Do all of the prep-work steps required to build the aaronkmurray.com site
 
 
 SET tidyErrFile=_tidy.index.html.errors.txt
-tidy.exe -output _tidy.index.html.original.txt -file %tidyErrFile%  ../../aaronkmurray-blog/index.html 
+tidy.exe -output _tidy.index.html.original.txt -file %tidyErrFile%  ../../aaronkmurray-blog/index.html
 
 IF ERRORLEVEL 2 GOTO tidy_errors
 IF ERRORLEVEL 1 GOTO tidy_warnings
@@ -17,13 +17,15 @@ exit
 
 
 :tidy_warnings
-ECHO tidy: warnings found
+ECHO tidy: Warnings found. Review the notepad file and close it to continue processing.
 notepad %tidyErrFile%
-exit
+REM don't kill the build on warnings, but show what they are 
+GOTO :tidy_post_success
 
- 
 :tidy_success
 ECHO tidy: success
+
+:tidy_post_success
 
 
 REM Make post screenshot thumbnails if necessary
@@ -51,6 +53,9 @@ imgsprite.exe -in:../../aaronkmurray-blog/img/blog/screenshots/*-thumb-100*.png 
 REM use imgsprite to make a css sprite for site header & footer icons
 imgsprite.exe -in:../../aaronkmurray-blog/img/blog/icons/*.png -img-out:../../aaronkmurray-blog/img/blog/sprites/blog-icons-all.png -css-out:../../aaronkmurray-blog/css/sprites/blog-icons-all.css -css-class-name-prefix:img- -image-deploy-url-base:../../img/blog/sprites/ -gen-test-html:true -test-html-path:../../aaronkmurray-blog/test/sprites/ -test-html-deploy-url-base:../../img/blog/sprites/
 
+
+REM just here as a hack stub for reducing an image to 8bpp
+REM imgsprite.exe -in:../../aaronkmurray-blog/img/blog/posts/post-22-speed-affects-consumers.png -img-out:../../aaronkmurray-blog/img/blog/posts/post-22-speed-affects-consumers-8.png -css-out:delete_me.css -css-class-name-prefix:img- -image-deploy-url-base:/ -gen-test-html:false -limit-bit-depth:8 
 
 
 
