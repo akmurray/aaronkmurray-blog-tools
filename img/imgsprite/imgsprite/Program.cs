@@ -58,7 +58,7 @@ namespace imgsprite
             var exitCode = ExitCode.Error;
             
             bool showHelp = false;
-            bool showDebug = true;
+            bool showDebug = false;
             bool pauseWhenFinished = false;
 
 
@@ -66,14 +66,22 @@ namespace imgsprite
 
             var p = new OptionSet() {
                 //standard options for command line utils
-                { "d|debug", "[optional, show debug details (verbose), default="+showDebug + "]", x => showDebug = x != null && bool.Parse(x)},
+                { "d|debug", "[optional, show debug details (verbose), default="+showDebug + "]", x => showDebug = x != null},
                 { "pause|pauseWhenFinished", "[optional, pause output window with a ReadLine when finished, default="+pauseWhenFinished + "]",   x => pauseWhenFinished = (x != null)},
                 { "h|?|help", "show the help options",   x => showHelp = x != null },
             };
 
             if (showHelp)
             {
-                Console.WriteLine(UsageText);
+                exitCode = ExitCode.Error;
+                try
+                {
+                    Console.WriteLine(UsageText);
+                } 
+                catch (Exception)
+                {
+                    Console.WriteLine("Help file unavailable; expected to find imgsprite-usage.txt");
+                }
             } 
             else
             {
@@ -86,7 +94,7 @@ namespace imgsprite
 
                     List<string> oResults;
                     if (!ImagePacker.CombineImages(packOptions, out oResults))
-                        throw new Exception("ImagePacker.CombineImages failed");
+                        throw new Exception("ImagePacker.CombineImages failed. " + string.Join(Environment.NewLine, oResults));
 
                     if (showDebug)
                         foreach (var result in oResults)
@@ -243,13 +251,16 @@ namespace imgsprite
 
             if (packOptions.ImageFilePaths.Count == 0)
             {
-                var filesPathPng = Directory.GetFiles(Environment.CurrentDirectory, "*.png").ToList();
-                if (filesPathPng.Count > 0)
-                    packOptions.ImageFilePaths.AddRange(filesPathPng);
-
-                var filesPathGif = Directory.GetFiles(Environment.CurrentDirectory, "*.gif").ToList();
-                if (filesPathGif.Count > 0)
-                    packOptions.ImageFilePaths.AddRange(filesPathGif);
+                var filesPaths = Directory.GetFiles(Environment.CurrentDirectory, "*.*")
+                    .Where(
+                        file => file.EndsWith("gif", StringComparison.InvariantCultureIgnoreCase)
+                            || file.EndsWith("png", StringComparison.InvariantCultureIgnoreCase)
+                            || file.EndsWith("jpg", StringComparison.InvariantCultureIgnoreCase)
+                            || file.EndsWith("jpeg", StringComparison.InvariantCultureIgnoreCase)
+                    )
+                    .ToList();
+                if (filesPaths.Count > 0)
+                    packOptions.ImageFilePaths.AddRange(filesPaths);
 
                 if (packOptions.ImageFilePaths.Count == 0)
                     throw new ArgumentException(string.Format("No input images were specified or found in the current directory."));
