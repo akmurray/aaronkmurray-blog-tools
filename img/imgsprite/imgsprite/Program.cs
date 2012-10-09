@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.IO;
+using System.Linq;
 using System.Reflection;
 using Mono.Options;
 
@@ -237,14 +238,35 @@ namespace imgsprite
                 }
             }
 
+
+            //Validate options and add defaults so that the program can run with minimal input
+
             if (packOptions.ImageFilePaths.Count == 0)
-                throw new ArgumentException(string.Format("No input images are specified."));
-            
+            {
+                
+                var filesPathPng = Directory.GetFiles(Environment.CurrentDirectory, "*.png").ToList();
+                if (filesPathPng.Count > 0)
+                    packOptions.ImageFilePaths.AddRange(filesPathPng);
+
+                var filesPathGif = Directory.GetFiles(Environment.CurrentDirectory, "*.gif").ToList();
+                if (filesPathGif.Count > 0)
+                    packOptions.ImageFilePaths.AddRange(filesPathGif);
+
+                if (packOptions.ImageFilePaths.Count == 0)
+                    throw new ArgumentException(string.Format("No input images were specified or found in the current directory."));
+            }
+
             if (string.IsNullOrEmpty(packOptions.ImageOutputFilePath))
-                throw new ArgumentException("Image output file path is not mentioned.");
+            {
+                //throw new ArgumentException("Image output file path is not mentioned.");
+                packOptions.ImageOutputFilePath = "sprite.png";
+            }
 
             if (string.IsNullOrEmpty(packOptions.CssOutputFilePath))
-                throw new ArgumentException("Css output file path is not mentioned.");
+            {
+                //throw new ArgumentException("Css output file path is not mentioned.");
+                packOptions.CssOutputFilePath = "sprite.css";
+            }
 
             if (!string.Equals(Path.GetExtension(packOptions.CssOutputFilePath), ".css", StringComparison.InvariantCultureIgnoreCase))
                 throw new ArgumentException("Css output file should be of type CSS.");

@@ -36,16 +36,16 @@ namespace imgsprite
 
             pOptions.ImageFilePaths.Sort(); //doing this as a debugging test
 
-            var frameArray = new List<ImageFrame>(pOptions.ImageFilePaths.Count);
-            foreach (string imageFile in pOptions.ImageFilePaths)
+            var frameArray = new List<ImageFrame>();
+            foreach (string imageFilePath in pOptions.ImageFilePaths)
             {
-                if (File.Exists(imageFile))
+                if (File.Exists(imageFilePath))
                 {
-                    inputFileTotalSize += new FileInfo(imageFile).Length;
+                    inputFileTotalSize += new FileInfo(imageFilePath).Length;
 
-                    using (var image = Image.FromFile(imageFile))
+                    using (var image = Image.FromFile(imageFilePath))
                     {
-                        var frame = new ImageFrame(imageFile, image.Width, image.Height);
+                        var frame = new ImageFrame(imageFilePath, image.Width, image.Height);
                         frameArray.Add(frame);
                         #region Debugging and Error Checking
                         if (image.Width > widestImage)
@@ -63,7 +63,7 @@ namespace imgsprite
                             || image.Height != frame.Height
                             || areaImage != frame.Area)
                         {
-                            oResults.Add(string.Format("Error: Image>Frame conversion size is incorrect: {0} ", imageFile));
+                            oResults.Add(string.Format("Error: Image>Frame conversion size is incorrect: {0} ", imageFilePath));
                             oResults.Add(string.Format("H/W/A: Image:{0}/{1}/{2}, Frame:{3}/{4}/{5}"
                                 , image.Height, image.Width, areaImage
                                 , frame.Height, frame.Width, frame.Area
@@ -74,7 +74,7 @@ namespace imgsprite
                 }
                 else
                 {
-                    oResults.Add(string.Format("Could not find file: {0} ", imageFile));
+                    oResults.Add(string.Format("Could not find file: {0} ", imageFilePath));
                     if (pOptions.TreatInputFileNotFoundAsError)
                         return false;
                 }
