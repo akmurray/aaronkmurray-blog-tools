@@ -58,7 +58,7 @@ namespace imgsprite
             var exitCode = ExitCode.Error;
             
             bool showHelp = false;
-            bool showDebug = false;
+            bool showDebug = true;
             bool pauseWhenFinished = false;
 
 
@@ -66,7 +66,7 @@ namespace imgsprite
 
             var p = new OptionSet() {
                 //standard options for command line utils
-                { "d|debug", "[optional, show debug details (verbose), default="+showDebug + "]",   x => showDebug = x != null},
+                { "d|debug", "[optional, show debug details (verbose), default="+showDebug + "]", x => showDebug = x != null && bool.Parse(x)},
                 { "pause|pauseWhenFinished", "[optional, pause output window with a ReadLine when finished, default="+pauseWhenFinished + "]",   x => pauseWhenFinished = (x != null)},
                 { "h|?|help", "show the help options",   x => showHelp = x != null },
             };
@@ -243,7 +243,6 @@ namespace imgsprite
 
             if (packOptions.ImageFilePaths.Count == 0)
             {
-                
                 var filesPathPng = Directory.GetFiles(Environment.CurrentDirectory, "*.png").ToList();
                 if (filesPathPng.Count > 0)
                     packOptions.ImageFilePaths.AddRange(filesPathPng);
@@ -254,6 +253,9 @@ namespace imgsprite
 
                 if (packOptions.ImageFilePaths.Count == 0)
                     throw new ArgumentException(string.Format("No input images were specified or found in the current directory."));
+
+                if (!packOptions.CssPlaceholderValues.ContainsKey(packOptions.CSS_PLACEHOLDER_CSS_CLASS_NAME_PREFIX))
+                    packOptions.CssPlaceholderValues[packOptions.CSS_PLACEHOLDER_CSS_CLASS_NAME_PREFIX] = "img-"; //reasonable default value for this case where a user didn't specify command line options.
             }
 
             if (string.IsNullOrEmpty(packOptions.ImageOutputFilePath))
