@@ -3,6 +3,25 @@ REM Do all of the prep-work steps required to build the aaronkmurray.com site
 
 
 
+SET phantomjsErrFile=_phantomjs_results.txt
+phantomjs.exe --web-security=false ../../aaronkmurray-blog/test/jasmine-standalone-1.2.0/lib/phantom-jasmine/run-jasmine-test.coffee ../../aaronkmurray-blog/test/jasmine-standalone-1.2.0/SpecRunner.html > %phantomjsErrFile%
+IF ERRORLEVEL 2 GOTO phantomjs_errors
+IF ERRORLEVEL 1 GOTO phantomjs_errors
+IF ERRORLEVEL 0 GOTO phantomjs_success
+
+:phantomjs_errors
+ECHO phantomjs: errors found
+notepad %phantomjsErrFile%
+exit
+
+:phantomjs_success
+ECHO phantomjs: success
+
+:phantomjs_post_success
+
+
+
+
 SET tidyErrFile=_tidy.index.html.errors.txt
 tidy.exe -output _tidy.index.html.original.txt -file %tidyErrFile%  ../../aaronkmurray-blog/index.html
 
@@ -15,7 +34,6 @@ ECHO tidy: errors found
 notepad %tidyErrFile%
 exit
 
-
 :tidy_warnings
 ECHO tidy: Warnings found. Review the notepad file and close it to continue processing.
 notepad %tidyErrFile%
@@ -26,6 +44,9 @@ GOTO :tidy_post_success
 ECHO tidy: success
 
 :tidy_post_success
+
+
+
 
 
 REM Make post screenshot thumbnails if necessary
