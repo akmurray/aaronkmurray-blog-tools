@@ -285,6 +285,10 @@ namespace imgsprite
             if (!string.Equals(Path.GetExtension(packOptions.CssOutputFilePath), ".css", StringComparison.InvariantCultureIgnoreCase))
                 throw new ArgumentException("Css output file should be of type CSS.");
 
+            if (!packOptions.CssPlaceholderValues.ContainsKey(packOptions.CSS_PLACEHOLDER_IMAGE_DEPLOY_URL_BASE))
+                packOptions.CssPlaceholderValues[packOptions.CSS_PLACEHOLDER_IMAGE_DEPLOY_URL_BASE] = string.Empty;
+            if (!packOptions.CssPlaceholderValues.ContainsKey(packOptions.CSS_PLACEHOLDER_CSS_CLASS_NAME_SUFFIX))
+                packOptions.CssPlaceholderValues[packOptions.CSS_PLACEHOLDER_CSS_CLASS_NAME_SUFFIX] = string.Empty;
             if (!packOptions.CssPlaceholderValues.ContainsKey(packOptions.CSS_PLACEHOLDER_CSS_CLASS_NAME_SUFFIX))
                 packOptions.CssPlaceholderValues[packOptions.CSS_PLACEHOLDER_CSS_CLASS_NAME_SUFFIX] = string.Empty;
 

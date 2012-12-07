@@ -8,6 +8,7 @@ imgsprite.exe
         -img-out:output_gif_file_path 
         -css-out:output_css_file_path
         [-css-class-name-prefix:class_name_prefix] 
+        [-css-class-name-suffix:class_name_suffix] 
         [-image-deploy-url-base:deployment_path_of_the_image]
         [-gen-test-html:true/false]
        
