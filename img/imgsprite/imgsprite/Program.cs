@@ -71,6 +71,8 @@ namespace imgsprite
                 { "h|?|help", "show the help options",   x => showHelp = x != null },
             };
 
+            List<string> extraArgs = p.Parse(args);
+
             if (showHelp)
             {
                 exitCode = ExitCode.Error;
@@ -87,7 +89,6 @@ namespace imgsprite
             {
                 try
                 {
-                    List<string> extraArgs = p.Parse(args);
                     var packOptions = ParseCommandLineArgs(extraArgs);
                     packOptions.CssFormatStringForSpriteDefinition = GetStringFromLocalFile("imgsprite_cssclass_format.css");
 
