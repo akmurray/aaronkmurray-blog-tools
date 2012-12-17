@@ -1,10 +1,14 @@
 @ECHO OFF
 REM Do all of the prep-work steps required to build the aaronkmurray.com site 
+REM https://github.com/akmurray/aaronkmurray-blog-tools/blob/master/build/build-aaronkmurray-site.bat
+
 
 
 
 REM --------------------------------------------------------------------------
 REM Run Javascript Unit Tests - fail build if necessary
+REM	http://phantomjs.org/
+REM	http://pivotal.github.com/jasmine/
 REM --------------------------------------------------------------------------
 
 SET phantomjsErrFile=_phantomjs_results.txt
@@ -60,6 +64,7 @@ ECHO tidy: success
 
 REM --------------------------------------------------------------------------
 REM Generate small post thumbnails
+REM	http://www.imagemagick.org/
 REM --------------------------------------------------------------------------
 
 REM Make post screenshot thumbnails if necessary
@@ -85,6 +90,7 @@ FOR /F %%A IN ('dir /b "../../aaronkmurray-blog/img/blog/screenshots/" ^|findstr
 
 REM --------------------------------------------------------------------------
 REM Create a CSS Sprite for small post thumbs
+REM	https://github.com/akmurray/aaronkmurray-blog-tools/tree/master/img/imgsprite
 REM --------------------------------------------------------------------------
 
 REM use imgsprite to make a css sprite for the thumbnail previews
@@ -100,8 +106,9 @@ REM imgsprite.exe -in:../../aaronkmurray-blog/img/blog/posts/post-22-speed-affec
 
 
 REM --------------------------------------------------------------------------
-REM Run CSSLint (via Rhino) to check for CSS warnings/errors and fail build if necessary
+REM Run CSSLint (via Java/Rhino) to check for CSS warnings/errors and fail build if necessary
 REM	https://github.com/stubbornella/csslint
+REM	https://developer.mozilla.org/en-US/docs/Rhino
 REM --------------------------------------------------------------------------
 
 SET csslintErrFile=_csslint.errors.txt
@@ -127,11 +134,65 @@ ECHO csslint: success
 
 :csslint_post_success
 
+REM Temp hack until I figure out why Rhino isn't returning the errorlevels from the command line
+notepad %csslintErrFile%
+
+
+
+
+
+REM --------------------------------------------------------------------------
+REM Minify, Bundle, and Version: CSS and Javascript files
+REM TODO: Need to get the file list for various bundles dynamically
+REM TODO: Need to version the files
+REM TODO: Need to have a "dev" path that doesn't require the bundling
+REM	https://github.com/akmurray/aaronkmurray-blog-tools
+REM	http://developer.yahoo.com/yui/compressor/
+REM --------------------------------------------------------------------------
+
+REM Examples for minifying a single file
+REM bundler.exe -pathSource=..\..\aaronkmurray-blog\js\ -pathOutput=..\..\aaronkmurray-blog\js\min\XMLHttpRequest.2012.09.02.min.js -searchPattern="XMLHttpRequest.2012.09.02.js"
+REM bundler.exe -pathSource=..\..\aaronkmurray-blog\js\ -pathOutput=..\..\aaronkmurray-blog\js\min\prototype-extensions.min.js -searchPattern="prototype-extensions.js"
+REM bundler.exe -pathSource=..\..\aaronkmurray-blog\js\ -pathOutput=..\..\aaronkmurray-blog\js\min\akm-util.min.js -searchPattern="akm-util.js"
+REM bundler.exe -pathSource=..\..\aaronkmurray-blog\js\ -pathOutput=..\..\aaronkmurray-blog\js\min\akm-gist.min.js -searchPattern="akm-gist.js"
+REM bundler.exe -pathSource=..\..\aaronkmurray-blog\js\ -pathOutput=..\..\aaronkmurray-blog\js\min\akm-blog.min.js -searchPattern="akm-blog.js"
+
+REM JS Minify multiple files into a fewer bundles (stable and volatile)
+bundler.exe -pathSource=..\..\aaronkmurray-blog\js\ -pathOutput=..\..\aaronkmurray-blog\js\bundles\index.top.stable.min.js -searchPattern="XMLHttpRequest.2012.09.02.js|prototype-extensions.js" -headerComment=" Author / Merged by: Aaron Murray, akmurray@gmail.com, @aaronkmurray" 
+bundler.exe -pathSource=..\..\aaronkmurray-blog\js\ -pathOutput=..\..\aaronkmurray-blog\js\bundles\index.top.volatile.min.js -searchPattern="akm-util.js|akm-gist.js|akm-blog.js" -headerComment=" Author / Merged by: Aaron Murray, akmurray@gmail.com, @aaronkmurray" 
+
+REM CSS Minify multiple files into a fewer bundles (stable and volatile)
+bundler.exe -pathSource=..\..\aaronkmurray-blog\css\ -pathOutput=..\..\aaronkmurray-blog\css\bundles\index.stable.min.css -searchPattern="blog-reset.css|blog-logo.css|sprites/blog-icons-all.css|sprites/sprite-logo.css|gist-embed.css" -headerComment=" Author / Merged by: Aaron Murray, akmurray@gmail.com, @aaronkmurray" 
+bundler.exe -pathSource=..\..\aaronkmurray-blog\css\ -pathOutput=..\..\aaronkmurray-blog\css\bundles\index.volatile.min.css -searchPattern="blog.css|sprites/post-screenshot-thumbs-all.css" -headerComment=" Author / Merged by: Aaron Murray, akmurray@gmail.com, @aaronkmurray" 
+
+REM Example for using YUI from the jar...not fun to work with. Need a working directory to not mess with originals
+REM xcopy /Y /R /V /I "..\..\aaronkmurray-blog\js\*.js" "..\..\aaronkmurray-blog\js\bundles"
+REM REM "C:\Program Files (x86)\Java\jre7\bin\java" -jar yuicompressor-2.4.7.jar --nomunge --line-break 0 -o '.js$:-min.js' ../../aaronkmurray-blog/js/min/*.js
+REM REM "C:\Program Files (x86)\Java\jre7\bin\java" -jar yuicompressor-2.4.7.jar --nomunge --line-break 0 -o '.js$:../../aaronkmurray-blog/js/min/akm-blog-min.js' ../../aaronkmurray-blog/js/min/akm-blog.js
+REM REM "C:\Program Files (x86)\Java\jre7\bin\java" -jar yuicompressor-2.4.7.jar --nomunge --line-break 0 -o ../../aaronkmurray-blog/js/min/akm-blog.js ../../aaronkmurray-blog/js/min/akm-blog.js
+
+
+
+
+REM --------------------------------------------------------------------------
+REM TODO Minify HTML
+REM Possible Future Step (just testing for now)
+REM HTML minification nets approx 10% filesize reduction
+REM Straight gzip on unminified HTML went from 59KB to 18KB...so we can realistically expect this to only have a 1% actual improvement
+REM	http://code.google.com/p/htmlcompressor/
+REM --------------------------------------------------------------------------
+
+REM 59->55KB   java -jar htmlcompressor-1.5.3.jar -o ../../aaronkmurray-blog/index.min.html ../../aaronkmurray-blog/index.html
+REM 59->54.5KB   java -jar htmlcompressor-1.5.3.jar --preserve-line-breaks -o ../../aaronkmurray-blog/index.min.html ../../aaronkmurray-blog/index.html
+REM 59->54KB   java -jar htmlcompressor-1.5.3.jar --preserve-line-breaks --remove-quotes --remove-intertag-spaces -o ../../aaronkmurray-blog/index.min.html ../../aaronkmurray-blog/index.html
+REM 59->53.5KB   java -jar htmlcompressor-1.5.3.jar --preserve-line-breaks --remove-quotes --remove-intertag-spaces --remove-http-protocol --remove-surrounding-spaces all -o ../../aaronkmurray-blog/index.min.html ../../aaronkmurray-blog/index.html
+
 
 
 
 REM --------------------------------------------------------------------------
 REM Generate RSS/ATOM feeds and fail build if necessary
+REM	https://github.com/akmurray/aaronkmurray-blog-tools/tree/master/rss/rssgen
 REM --------------------------------------------------------------------------
 
 REM use RSSGEN to build rss feed
@@ -164,25 +225,13 @@ exit
 
 REM --------------------------------------------------------------------------
 REM Compress images to save bandwidth
+REM	https://github.com/akmurray/aaronkmurray-blog-tools/tree/master/img/imgsqz
 REM --------------------------------------------------------------------------
 
 REM use imgsqz to losslessly compress the filesize of images
 imgsqz.exe -s=../../aaronkmurray-blog/ 
 
 
-
-
-REM --------------------------------------------------------------------------
-REM Testing area for future stuff
-REM --------------------------------------------------------------------------
-
-REM Future (just testing for now). HTML minification nets approx 10% filesize reduction. 
-REM Straight gzip on unminified HTML went from 59KB to 18KB...so we can realistically expect this to only have a 1% actual improvement
-REM http://code.google.com/p/htmlcompressor/
-REM 59->55KB   java -jar htmlcompressor-1.5.3.jar -o ../../aaronkmurray-blog/index.min.html ../../aaronkmurray-blog/index.html
-REM 59->54.5KB   java -jar htmlcompressor-1.5.3.jar --preserve-line-breaks -o ../../aaronkmurray-blog/index.min.html ../../aaronkmurray-blog/index.html
-REM 59->54KB   java -jar htmlcompressor-1.5.3.jar --preserve-line-breaks --remove-quotes --remove-intertag-spaces -o ../../aaronkmurray-blog/index.min.html ../../aaronkmurray-blog/index.html
-REM 59->53.5KB   java -jar htmlcompressor-1.5.3.jar --preserve-line-breaks --remove-quotes --remove-intertag-spaces --remove-http-protocol --remove-surrounding-spaces all -o ../../aaronkmurray-blog/index.min.html ../../aaronkmurray-blog/index.html
 
 
 REM --------------------------------------------------------------------------
