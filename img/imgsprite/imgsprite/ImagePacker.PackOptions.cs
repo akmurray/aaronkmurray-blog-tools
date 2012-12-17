@@ -133,7 +133,11 @@ namespace imgsprite
             public string CSS_PLACEHOLDER_OFFSET_X;
             public string CSS_PLACEHOLDER_OFFSET_Y;
             public string CSS_PLACEHOLDER_IMAGE_DEPLOY_URL_BASE;
-            
+
+            /// <summary>
+            /// Text to prepend to css file. Can be used for extra pre-styles or comments
+            /// </summary>
+            public string CssHeaderText { get; set; }
         }
 
     }

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.IO;
 using System.Linq;
 using System.Reflection;
+using System.Text;
 using Mono.Options;
 
 namespace imgsprite
@@ -92,6 +93,15 @@ namespace imgsprite
                     var packOptions = ParseCommandLineArgs(extraArgs);
                     packOptions.CssFormatStringForSpriteDefinition = GetStringFromLocalFile("imgsprite_cssclass_format.css");
 
+                    //add file header comment
+                    var cssBuffer = new StringBuilder();
+                    cssBuffer.AppendLine("/*!");
+                    cssBuffer.AppendLine(" Generated using ImgSprite by Aaron K. Murray, akmurray@gmail.com, @aaronkmurray");
+                    cssBuffer.AppendLine(" https://github.com/akmurray/aaronkmurray-blog-tools/tree/master/img/imgsprite");
+                    cssBuffer.AppendLine("");
+                    cssBuffer.AppendLine(" " + Path.GetFileName(packOptions.CssOutputFilePath));
+                    cssBuffer.AppendLine("*/");
+                    packOptions.CssHeaderText = cssBuffer.ToString();
 
                     List<string> oResults;
                     if (!ImagePacker.CombineImages(packOptions, out oResults))

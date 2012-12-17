@@ -274,6 +274,8 @@ namespace imgsqz
                 var ext = fi.Extension.ToLower();
                 var isPng = ext.EndsWith("png");
                 var isJpg = ext.EndsWith("jpg") || ext.EndsWith("jpeg");
+                var isGif = ext.EndsWith("gif");
+                var isWebp = ext.EndsWith("webp");
 
                 result.StartSize = fi.Length;
 
@@ -308,7 +310,20 @@ namespace imgsqz
                     var step1ms = sw.ElapsedMilliseconds;
                     result.AddNote("Size after JPG Compression: " + fi.Length + " bytes (" + (result.StartSize - result.EndSize) +
                                    " savings), took " + step1ms + " milliseconds");
-                    
+
+                }
+                else if (isGif)
+                {
+                    result.AddNote("TODO GIF Compression");
+
+                    //var resultsGif = CompressGif(path);
+                    //result.AddNote(resultsGif);
+                    //fi = new FileInfo(path);
+                    //result.EndSize = fi.Length;
+                    //var step1ms = sw.ElapsedMilliseconds;
+                    //result.AddNote("Size after GIF Compression: " + fi.Length + " bytes (" + (result.StartSize - result.EndSize) +
+                    //               " savings), took " + step1ms + " milliseconds");
+
                 }
 
                 result.SizeDelta = result.StartSize - result.EndSize;
@@ -376,7 +391,7 @@ namespace imgsqz
         }
 
         /// <summary>
-        /// Compress a jpg by trying baseline and progressive options - keeping the smaller and overwriting the original faile
+        /// Compress a jpg by trying baseline and progressive options - keeping the smaller and overwriting the original file
         /// </summary>
         /// <param name="pImagePathInput"></param>
         /// <param name="pImagePathOutput">if null/empty, overwrite original file</param>
@@ -450,6 +465,7 @@ namespace imgsqz
 
             return sb.ToString();
         }
+
 
         /// <summary>
         /// Use pFiNew to replace pFiOriginal

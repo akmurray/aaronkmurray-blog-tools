@@ -34,6 +34,10 @@ namespace imgsprite
             var cssBuffer = new StringBuilder();
             var testPage = new StringBuilder();
 
+
+            if (!string.IsNullOrWhiteSpace(pOptions.CssHeaderText))
+                cssBuffer.AppendLine(pOptions.CssHeaderText);
+
             pOptions.ImageFilePaths.Sort(); //doing this as a debugging test
 
             var frameArray = new List<ImageFrame>();
