@@ -55,6 +55,9 @@
     <Reference Include="Iesi.Collections">
       <HintPath>..\packages\Iesi.Collections.3.2.0.4000\lib\Net35\Iesi.Collections.dll</HintPath>
     </Reference>
+    <Reference Include="murray.common">
+      <HintPath>..\..\..\build\murray.common.dll</HintPath>
+    </Reference>
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\packages\Newtonsoft.Json.4.5.11\lib\net40\Newtonsoft.Json.dll</HintPath>
     </Reference>
@@ -73,7 +76,6 @@
     <Compile Include="CompressionResult.cs" />
     <Compile Include="FileActionStatus.cs" />
     <Compile Include="Murray\Common\ConsoleHelper.cs" />
-    <Compile Include="Murray\Common\IOHelper.cs" />
     <Compile Include="Murray\Common\ExtensionsForStringBuilder.cs" />
     <Compile Include="Murray\Common\Str.cs" />
     <Compile Include="NDesk.Options.cs" />

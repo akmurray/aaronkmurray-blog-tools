@@ -5,6 +5,9 @@ REM https://github.com/akmurray/aaronkmurray-blog-tools/blob/master/build/build-
 
 
 
+
+
+
 REM --------------------------------------------------------------------------
 REM Run Javascript Unit Tests - fail build if necessary
 REM	http://phantomjs.org/
@@ -84,6 +87,41 @@ FOR /F %%A IN ('dir /b "../../aaronkmurray-blog/img/blog/screenshots/" ^|findstr
     REM ECHO Already created thumbnail for !thumbName!
   )
 )
+
+
+
+
+
+REM --------------------------------------------------------------------------
+REM Run CSS Preprocessor (SASS) to compile CSS and fail build if necessary
+REM	https://github.com/akmurray/aaronkmurray-blog-tools/tree/master/js-css/preprocessor
+REM	http://sass-lang.com
+REM	https://github.com/nex3/sass
+REM --------------------------------------------------------------------------
+
+SET cssPreProcess_ErrFileName=%~dp0_preprocessor.errors.txt
+%~dp0preprocessor/preprocessor.exe -s:../../aaronkmurray-blog/ -pat:*.scss -err=%cssPreProcess_ErrFileName% -recurseDirs=true
+
+IF ERRORLEVEL 2 GOTO cssPreProcess_errors
+IF ERRORLEVEL 1 GOTO cssPreProcess_warnings
+IF ERRORLEVEL 0 GOTO cssPreProcess_success
+
+:cssPreProcess_errors
+ECHO cssPreProcess: errors found
+notepad %cssPreProcess_ErrFileName%
+exit
+
+:cssPreProcess_warnings
+ECHO cssPreProcess: Warnings found. Review the messages above. Also review the notepad file and close it to continue processing.
+notepad %cssPreProcess_ErrFileName%
+REM GOTO :cssPreProcess_post_success
+
+:cssPreProcess_success
+ECHO cssPreProcess: success
+
+:cssPreProcess_post_success
+
+
 
 
 

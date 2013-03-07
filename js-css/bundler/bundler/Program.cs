@@ -10,6 +10,7 @@ using Mono.Options;
 using Murray.Common;
 using Newtonsoft.Json;
 using Yahoo.Yui.Compressor;
+using murray.common;
 
 namespace bundler
 {
@@ -55,12 +56,12 @@ namespace bundler
             var p = new OptionSet() {
                 { "o|pathOutput=", "[required, path and filename]",  x => pathOutput = x },
                 { "s|pathSource=", "[optional, default=current folder]",  x => pathSource = x },
-                { "r|recurseDirs=", "[optional, recursively compress files in subfolders, default="+recurseDirs + "]",   x => recurseDirs = Str.ToBool(x)},
+                { "r|recurseDirs=", "[optional, recursively compress files in subfolders, default="+recurseDirs + "]",   x => recurseDirs = str.ToBool(x)},
                 { "pat|searchPattern=", "[optional, filename pattern match expression, pipe separated, default="+searchPattern + "]",   x => searchPattern = x},
                 { "com|headerComment=", "[optional, comment to include in compressed file header, default="+headerComment + "]",   x => headerComment = x},
-                { "id|includeGenDateInHeaderComment=", "[optional, include datestamp in output file, default=" + includeGenDateInHeaderComment + "]",   x => includeGenDateInHeaderComment = Str.ToBool(x)},
-                { "oj|obfuscateJavascript=", "[optional, obfuscate javascript, default="+obfuscateJavascript + "]",   x => obfuscateJavascript = Str.ToBool(x)},
-                { "c|compressFileContents=", "[optional, compress file contents, default="+compressFileContents + "]",   x => compressFileContents = Str.ToBool(x)},
+                { "id|includeGenDateInHeaderComment=", "[optional, include datestamp in output file, default=" + includeGenDateInHeaderComment + "]",   x => includeGenDateInHeaderComment = str.ToBool(x)},
+                { "oj|obfuscateJavascript=", "[optional, obfuscate javascript, default="+obfuscateJavascript + "]",   x => obfuscateJavascript = str.ToBool(x)},
+                { "c|compressFileContents=", "[optional, compress file contents, default="+compressFileContents + "]",   x => compressFileContents = str.ToBool(x)},
                 
 
                 //standard options for command line utils
@@ -78,11 +79,11 @@ namespace bundler
             }
             else
             {
-                IOHelper.EnsurePathToFile(pathOutput);
+                io.EnsurePathToFile(pathOutput);
             }
 
             if (string.IsNullOrWhiteSpace(pathSource))
-                pathSource = IOHelper.GetCurrentDirectory(); //default if not specified
+                pathSource = io.GetCurrentDirectory(); //default if not specified
 
             if (!Directory.Exists(pathSource))
             {
@@ -163,20 +164,29 @@ namespace bundler
                     sb.AppendLine("\t\t" + note);
 
                 Console.WriteLine(sb.ToString());
-            }
 
-
-            if (showDebug)
-            {
                 Console.WriteLine("Complete at " + DateTime.Now.ToLongTimeString() + ". Took " + DateTime.Now.Subtract(_startTime).TotalSeconds + " seconds to run");
             }
 
-            if (pauseWhenFinished)
+            var exitCode = ExitCode.Success;
+
+            //handle errors
+            if (compressionResult.Exception != null)
+            {
+                Console.WriteLine("Exception: " + compressionResult.Exception.Message);
+                exitCode = ExitCode.Success;
+            }
+            if (!string.IsNullOrWhiteSpace(compressionResult.ErrorMessage))
+            {
+                Console.WriteLine("ERROR: " + compressionResult.ErrorMessage);
+                exitCode = ExitCode.Success;
+            }
+
             {
                 Console.WriteLine("Press any key to complete");
                 Console.ReadLine(); //just here to pause the output window during testing
             }
-            return (int)ExitCode.Success;
+            return (int)exitCode;
         }
 
         private static CompressionResult TryCompress(IList<string> pSourceFilePaths, string pOutputFilePath,
@@ -303,7 +313,7 @@ namespace bundler
                 if (string.IsNullOrWhiteSpace(sourceFilePath))
                     sourceFilePath = Path.GetDirectoryName(filepath);
 
-                var contentsOrig = IOHelper.ReadASCIITextFile(filepath);
+                var contentsOrig = io.ReadASCIITextFile(filepath);
                 var contentsMin = compressor.Compress(contentsOrig);
 
                 var sizeNote = string.Format("[Orig: {0} KB", contentsOrig.Length / 1024);
@@ -311,7 +321,7 @@ namespace bundler
                     sizeNote += string.Format(", Min'd: {0} KB", contentsMin.Length / 1024);
                 sizeNote += "]";
 
-                var fileComment = string.Format("{0} : {1}", Str.Postpend(Path.GetFileName(filepath), postpendLength, ' '), sizeNote);
+                var fileComment = string.Format("{0} : {1}", str.Postpend(Path.GetFileName(filepath), postpendLength, ' '), sizeNote);
                 sbHeadComment.AppendLineFormat(" -> {0}", fileComment);
 
                 sbSourceText.AppendLine(contentsMin); //concat the file contents
@@ -321,10 +331,10 @@ namespace bundler
             sbHeadComment.AppendLine("*/");
             sbHeadComment.AppendLine();
 
-            if (pSourceFilePaths.Count == 1 && !Str.ToString(Path.GetFileName(pOutputFilePath)).Contains(".")) //single file w/o a diff filename
-                IOHelper.WriteTextFile(Path.Combine(pOutputFilePath, Path.GetFileName(pSourceFilePaths.First())), sbHeadComment.ToString() + sbSourceText.ToString());
+            if (pSourceFilePaths.Count == 1 && !str.ToString(Path.GetFileName(pOutputFilePath)).Contains(".")) //single file w/o a diff filename
+                io.WriteTextFile(Path.Combine(pOutputFilePath, Path.GetFileName(pSourceFilePaths.First())), sbHeadComment.ToString() + sbSourceText.ToString());
             else
-                IOHelper.WriteTextFile(pOutputFilePath, sbHeadComment.ToString() + sbSourceText.ToString()); //bundled file or file w/a diff filename
+                io.WriteTextFile(pOutputFilePath, sbHeadComment.ToString() + sbSourceText.ToString()); //bundled file or file w/a diff filename
 
             return sbHeadComment.ToString();
         }
