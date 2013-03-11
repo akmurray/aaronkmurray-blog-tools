@@ -77,7 +77,7 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="PreprocessResult.cs" />
-    <Compile Include="SassPreprocesser.cs" />
+    <Compile Include="SassPreprocessor.cs" />
     <Compile Include="Program.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

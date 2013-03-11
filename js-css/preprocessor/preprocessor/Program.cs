@@ -149,7 +149,7 @@ namespace preprocessor
 
                 // --- BEGIN THE WORK --- //
 
-                PreprocessResult preprocessResult = SassPreprocesser.Run(filepaths, pathOutput, compressFileContents, headerComment, includeGenDateInHeaderComment);
+                PreprocessResult preprocessResult = SassPreprocessor.Run(filepaths, pathOutput, compressFileContents, headerComment, includeGenDateInHeaderComment);
 
 
                 if (showDebug)
