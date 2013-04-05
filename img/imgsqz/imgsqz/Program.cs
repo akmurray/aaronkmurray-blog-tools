@@ -369,14 +369,14 @@ namespace imgsqz
         static string RunOptipng(string pImagePathInput) 
         {
             string exePath = "optipng.exe";
-            var output = ProcessHelper.RunProcessAndReturnOutput(exePath, "-o7 -v " + pImagePathInput);
+            var output = ProcessHelper.RunProcessAndReturnOutput(exePath, "-o7 -v \"" + pImagePathInput + "\"");
             return output;
         }
 
         static string RunPngout(string pImagePathInput) 
         {
             string exePath = "pngout.exe";
-            var output = ProcessHelper.RunProcessAndReturnOutput(exePath, "/y " + pImagePathInput);
+            var output = ProcessHelper.RunProcessAndReturnOutput(exePath, "/y \"" + pImagePathInput + "\"");
             return output;
         }
 
@@ -386,7 +386,7 @@ namespace imgsqz
                 pImagePathOutput = pImagePathInput; //default to overwrite original
 
             string exePath = "convert.exe";
-            var output = ProcessHelper.RunProcessAndReturnOutput(exePath, pArguments + " " + pImagePathInput + " " + pImagePathOutput);
+            var output = ProcessHelper.RunProcessAndReturnOutput(exePath, pArguments + " \"" + pImagePathInput + "\" \"" + pImagePathOutput + "\"");
             return output;
         }
 
