@@ -174,12 +174,12 @@ namespace bundler
             if (compressionResult.Exception != null)
             {
                 Console.WriteLine("Exception: " + compressionResult.Exception.Message);
-                exitCode = ExitCode.Success;
+                exitCode = ExitCode.Error;
             }
             if (!string.IsNullOrWhiteSpace(compressionResult.ErrorMessage))
             {
                 Console.WriteLine("ERROR: " + compressionResult.ErrorMessage);
-                exitCode = ExitCode.Success;
+                exitCode = ExitCode.Error;
             }
 
             {

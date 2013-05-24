@@ -150,7 +150,7 @@ REM	https://developer.mozilla.org/en-US/docs/Rhino
 REM --------------------------------------------------------------------------
 
 SET csslintErrFile=_csslint.errors.txt
-"C:\Program Files (x86)\Java\jre7\bin\java" -jar rhino.jar csslint-rhino.js --ignore=ids,qualified-headings,unique-headings,duplicate-background-images,zero-units,outline-none,empty-rules,overqualified-elements --warnings=universal-selector ../../aaronkmurray-blog/css/ > %csslintErrFile%
+"C:\Program Files (x86)\Java\jre7\bin\java" -jar rhino.jar csslint-rhino.js --ignore=ids,qualified-headings,unique-headings,duplicate-background-images,zero-units,outline-none,empty-rules,overqualified-elements,adjoining-classes --warnings=universal-selector ../../aaronkmurray-blog/css/ > %csslintErrFile%
 
 IF ERRORLEVEL 2 GOTO csslint_errors
 IF ERRORLEVEL 1 GOTO csslint_warnings
