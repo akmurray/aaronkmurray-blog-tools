@@ -39,6 +39,8 @@ namespace rssgen
             string xpathPostDateUpdated = "div[@class='blog-post-footer']/span[@class='post-timestamp-updated']";
             string xpathPostTags = "div[@class='blog-post-footer']/span[@class='post-tags']";
             string xpathPostImage = "div[@class='blog-post-footer']/span[@class='post-screenshot']/a/img";
+            string xpathPostLink = "div[@class='blog-post-header']/h2/a/@href";
+            
 
             var p = new OptionSet () {
                 { "s|fileSource=", "*REQUIRED* > ex: index.html", x => fileSource = x },
@@ -57,6 +59,7 @@ namespace rssgen
                 { "xdu|xpathPostDateUpdated=", "[optional, default="+xpathPostDateUpdated + "]", x => xpathPostDateUpdated = x },
                 { "xt|xpathPostTags=", "[optional, default="+xpathPostTags + "]", x => xpathPostTags = x },
                 { "xi|xpathPostImage=", "[optional, default="+xpathPostImage + "]", x => xpathPostImage = x },
+                { "xl|xpathPostLink=", "[optional, default="+xpathPostLink+ "]", x => xpathPostLink = x },
 
                 //standard options for command line utils
                 { "d|debug", "[optional, show debug details (verbose), default="+showDebug + "]",   x => showDebug = x != null},
@@ -169,7 +172,32 @@ namespace rssgen
                     var datePublishedNode = el.SelectSingleNode(xpathPostDatePub);
                     var dateUpdatedNode = el.SelectSingleNode(xpathPostDateUpdated);
                     var tags = el.SelectSingleNode(xpathPostTags);
-                    var image =  el.SelectSingleNode(xpathPostImage);
+                    var image = el.SelectSingleNode(xpathPostImage);
+                    var link = el.SelectSingleNode(xpathPostLink);
+
+                    Uri postUri = null;
+                    if (link != null)
+                    {
+                        string href = link.Attributes["href"] == null ? null : link.Attributes["href"].Value.Trim();
+                        if (!string.IsNullOrWhiteSpace(href))
+                        {
+                            if (href.StartsWith("http", true, CultureInfo.CurrentCulture) ||
+                                href.StartsWith("//", true, CultureInfo.CurrentCulture))
+                            {
+                                Uri.TryCreate(href, UriKind.Absolute, out postUri);
+                            }
+                            else
+                            {
+                                Uri.TryCreate(href, UriKind.Relative, out postUri);
+                            }
+                        } else {
+                            Uri.TryCreate(link.InnerText, UriKind.Absolute, out postUri);
+                        }
+                    } 
+
+                    if (postUri == null)    
+                        Uri.TryCreate(baseUrl, UriKind.Absolute, out postUri); //fallback on the baseUrl as a link
+
 
                     DateTime datePublished = DateTime.Now;
                     if (datePublishedNode != null)
@@ -195,6 +223,7 @@ namespace rssgen
                         , dateUpdated
                         , tags == null ? null : tags.InnerText
                         , image == null ? null : image.OuterHtml
+                        , postUri 
                     );
 
                     if (showDebug)

@@ -11,5 +11,6 @@ namespace rssgen
         public DateTime DateLastUpdated { get; set; }
         public string Tags { get; set; }
         public string ImageHtml { get; set; }
+        public Uri TitleLinkUri { get; set; }
     }
 }

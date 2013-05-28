@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Collections.ObjectModel;
 using System.IO;
 using System.Linq;
 using System.ServiceModel.Syndication;
@@ -120,15 +121,13 @@ namespace rssgen
             {
                 foreach (var entry in pFeed.Entries)
                 {
-                    items.Add(new SyndicationItem
-                        {
-                            //Id, DatePublished, DateLastUpdated are required so that each new post won't make readers think that every entry is new
-                            Title = new TextSyndicationContent(entry.Title)
-                            , Id = entry.Id 
-                            , PublishDate = entry.DatePublished
-                            , LastUpdatedTime = entry.DateLastUpdated
-                            , Content = new TextSyndicationContent(entry.Body) // + entry.ImageHtml
-                        });
+                    var item = new SyndicationItem(entry.Title, entry.Body, entry.TitleLinkUri);
+                    //Id, DatePublished, DateLastUpdated are required so that each new post won't make readers think that every entry is new
+                    item.Id = entry.Id;
+                    item.PublishDate = entry.DatePublished;
+                    item.LastUpdatedTime = entry.DateLastUpdated;
+                    item.BaseUri = entry.TitleLinkUri;
+                    items.Add(item);
                 }
             }
 

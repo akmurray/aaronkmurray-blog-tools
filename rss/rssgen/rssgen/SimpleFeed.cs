@@ -22,7 +22,7 @@ namespace rssgen
         }
 
 
-        public void AddEntry(string id, string header, string body, DateTime datePublished, DateTime dateUpdated, string tags, string image)
+        public void AddEntry(string id, string header, string body, DateTime datePublished, DateTime dateUpdated, string tags, string image, Uri titleLinkUri = null)
         {
             var entry = new SimpleFeedEntry();
 
@@ -33,6 +33,7 @@ namespace rssgen
             entry.DateLastUpdated = dateUpdated;
             entry.Tags = tags;
             entry.ImageHtml = image;
+            entry.TitleLinkUri = titleLinkUri;
 
             Entries.Add(entry);
         }
