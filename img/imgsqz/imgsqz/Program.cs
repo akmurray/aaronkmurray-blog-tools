@@ -44,8 +44,11 @@ namespace imgsqz
             string pathSource = null;
             bool forceRecalc = false;
             bool recurseDirs = true;
+            bool removeTestImages = true;
+
             string searchPattern = "*.png|*.jpg|*.jpeg";
             string pathFileStatus = "filestatus.json";
+            string imageMagickExePath = "convert.exe";
             
 
             bool showHelp = false;
@@ -58,6 +61,8 @@ namespace imgsqz
                 { "r|recurseDirs=", "[optional, recursively compress images in subfolders, default="+recurseDirs + "]",   x => recurseDirs = (x == null) || bool.Parse(x)},
                 { "pat|searchPattern=", "[optional, filename pattern match expression, default="+searchPattern + "]",   x => searchPattern = x},
                 { "pfs|pathFileStatus=", "[optional, file to store file compression status info, default="+pathFileStatus + "]",   x => pathFileStatus = x},
+                { "rem|removeTestImages=", "[optional, remove test images created when testing compression methods, default="+removeTestImages + "]",   x => removeTestImages = (x == null) || bool.Parse(x)},
+                { "imep|imageMagickExePath=", "[optional, path to ImageMagick's convert.exe, default="+imageMagickExePath + "]",   x => imageMagickExePath = x},
                 
 
                 //standard options for command line utils
@@ -94,6 +99,9 @@ namespace imgsqz
                 Console.WriteLine("\tsearchPattern:\t" + searchPattern);
                 Console.WriteLine("\tforceRecalc:\t" + forceRecalc);
                 Console.WriteLine("\tpathFileStatus:\t" + pathFileStatus);
+                Console.WriteLine("\timageMagickExePath:\t" + imageMagickExePath);
+                Console.WriteLine("\tremoveTestImages:\t" + removeTestImages);
+                Console.WriteLine("\tdebug:\t" + showDebug);
                 Console.WriteLine();
             }
 
@@ -192,7 +200,7 @@ namespace imgsqz
                 {
                     //let's try to compress this image
 
-                    CompressionResult compressionResult = TryCompress(status.Path);
+                    CompressionResult compressionResult = TryCompress(status.Path, showDebug, removeTestImages, imageMagickExePath);
                     status.StatusCode = compressionResult.StatusCode;
                     if (status.StatusCode == 1)
                     {
@@ -261,7 +269,7 @@ namespace imgsqz
             return (int)ExitCode.Success;
         }
 
-        private static CompressionResult TryCompress(string path)
+        private static CompressionResult TryCompress(string path, bool pIsDebug, bool pRemoveTestImages, string pImageMagickExePath = null)
         {
             var sw = new Stopwatch();
             var result = new CompressionResult();
@@ -303,7 +311,7 @@ namespace imgsqz
                 } 
                 else if (isJpg)
                 {
-                    var resultsJpg = CompressJpg(path);
+                    var resultsJpg = CompressJpg(path, pImageMagickExePath, null, pIsDebug, pRemoveTestImages);
                     result.AddNote(resultsJpg);
                     fi = new FileInfo(path);
                     result.EndSize = fi.Length;
@@ -380,13 +388,43 @@ namespace imgsqz
             return output;
         }
 
-        static string RunImageMagick(string pImagePathInput, string pArguments, string pImagePathOutput = null)
+        static string RunImageMagick(string pImageMagickExePath, string pImagePathInput, string pArguments, string pImagePathOutput = null, bool pIsDebug = false)
         {
             if (string.IsNullOrWhiteSpace(pImagePathOutput))
                 pImagePathOutput = pImagePathInput; //default to overwrite original
+            if (pArguments == null)
+                pArguments = "";
 
-            string exePath = "convert.exe";
-            var output = ProcessHelper.RunProcessAndReturnOutput(exePath, pArguments + " \"" + pImagePathInput + "\" \"" + pImagePathOutput + "\"");
+            if (pIsDebug)
+                pArguments = "-debug \"All\" " + pArguments;
+            var args = pArguments + " \"" + pImagePathInput + "\" \"" + pImagePathOutput + "\"";
+
+            string output = string.Empty;
+            if (pIsDebug)
+                output += pImageMagickExePath + " " + args + Environment.NewLine;
+
+            string workingDir = null;
+            if (pImageMagickExePath != null && pImageMagickExePath.Contains("\\"))
+            {
+                workingDir = pImageMagickExePath.Substring(0, pImageMagickExePath.LastIndexOf("\\"));
+
+                var filename = Path.GetFileName(pImageMagickExePath);
+
+                if (pIsDebug)
+                {
+                    output += "workingDir: " + workingDir + Environment.NewLine;
+                    output += "exe filename: " + filename + Environment.NewLine;
+                }
+            }
+
+            try
+            {
+                output += ProcessHelper.RunProcessAndReturnOutput(pImageMagickExePath, args, workingDir);
+            }
+            catch (Exception ex)
+            {
+                output += "ERROR running ImageMagick: " + ex.Message;
+            }
             return output;
         }
 
@@ -394,10 +432,12 @@ namespace imgsqz
         /// Compress a jpg by trying baseline and progressive options - keeping the smaller and overwriting the original file
         /// </summary>
         /// <param name="pImagePathInput"></param>
+        /// <param name="pImageMagickExePath">C:\Program Files\ImageMagick-6.8.8-Q16\convert.exe</param>
         /// <param name="pImagePathOutput">if null/empty, overwrite original file</param>
         /// <param name="pIsDebug">if true, adds extra debug-level results text </param>
+        /// <param name="pRemoveTestImages">if false, keep any generated test images</param>
         /// <returns></returns>
-        static string CompressJpg(string pImagePathInput, string pImagePathOutput = null, bool pIsDebug = false)
+        static string CompressJpg(string pImagePathInput, string pImageMagickExePath, string pImagePathOutput = null, bool pIsDebug = false, bool pRemoveTestImages = true)
         {
             if (string.IsNullOrWhiteSpace(pImagePathOutput))
                 pImagePathOutput = pImagePathInput; //default to overwrite original
@@ -408,15 +448,15 @@ namespace imgsqz
             FileInfo fiSource = new FileInfo(pImagePathInput), fiBaseline = null, fiProgressive = null;
 
             var guid = Guid.NewGuid();
-            var filepathBaseline = fiSource.Name + "-" + guid + "-baseline.jpg";
-            var filepathProgressive = fiSource.Name + "-" + guid + "-progressive.jpg";
+            var filepathBaseline = Path.Combine(fiSource.DirectoryName, fiSource.Name + "-" + guid + "-baseline.jpg");
+            var filepathProgressive = Path.Combine(fiSource.DirectoryName, fiSource.Name + "-" + guid + "-progressive.jpg");
 
-            var outputB = RunImageMagick(pImagePathInput, "-strip", filepathBaseline);
-            if (pIsDebug)
+            var outputB = RunImageMagick(pImageMagickExePath, pImagePathInput, "-strip", filepathBaseline, pIsDebug);
+            if (pIsDebug && !string.IsNullOrEmpty(outputB))
                 sb.AppendLine(outputB);
 
-            var outputP = RunImageMagick(pImagePathInput, "-strip -interlace Plane", filepathProgressive);
-            if (pIsDebug)
+            var outputP = RunImageMagick(pImageMagickExePath, pImagePathInput, "-strip -interlace Plane", filepathProgressive, pIsDebug);
+            if (pIsDebug && !string.IsNullOrEmpty(outputP))
                 sb.AppendLine(outputP);
 
             bool usingBaseline = false, usingProgressive = false;
@@ -460,8 +500,11 @@ namespace imgsqz
                 sb.AppendLine("Unable to compress jpg further. " + pImagePathInput);
             }
 
-            File.Delete(filepathBaseline);
-            File.Delete(filepathProgressive);
+            if (pRemoveTestImages)
+            {
+                File.Delete(filepathBaseline);
+                File.Delete(filepathProgressive);
+            }
 
             return sb.ToString();
         }

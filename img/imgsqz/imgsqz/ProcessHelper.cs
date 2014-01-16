@@ -1,16 +1,19 @@
 ﻿using System;
 using System.Diagnostics;
+using System.IO;
 
 namespace imgsqz
 {
     public static class ProcessHelper
     {
-        public static string RunProcessAndReturnOutput(string pExePath, string pCommandLineArgs)
+        public static string RunProcessAndReturnOutput(string pExeFilename, string pCommandLineArgs, string pExeWorkingDirectory = null)
         {
 
             var process = new Process();
+            if (!string.IsNullOrEmpty(pExeWorkingDirectory))
+                process.StartInfo.WorkingDirectory = pExeWorkingDirectory;
+            process.StartInfo.FileName = pExeFilename;
             process.StartInfo.UseShellExecute = false;
-            process.StartInfo.FileName = pExePath;
             process.StartInfo.CreateNoWindow = true;
             process.StartInfo.RedirectStandardOutput = true;
             process.StartInfo.Arguments = pCommandLineArgs;
@@ -23,7 +26,7 @@ namespace imgsqz
             }
             else
             {
-                throw new Exception(pExePath + " failed to start with args: " + pCommandLineArgs);
+                throw new Exception(pExeWorkingDirectory + pExeFilename + " failed to start with args: " + pCommandLineArgs);
             }
             return output;
         }
