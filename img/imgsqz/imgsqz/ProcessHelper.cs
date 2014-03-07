@@ -21,7 +21,8 @@ namespace imgsqz
             string output;
             if (process.Start())
             {
-                output = process.StandardOutput.ReadToEnd();
+				process.PriorityClass = ProcessPriorityClass.BelowNormal;
+				output = process.StandardOutput.ReadToEnd();
                 process.WaitForExit();
             }
             else
